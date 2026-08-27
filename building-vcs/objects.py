@@ -3,16 +3,16 @@ import os
 import zlib 
 
 def main():
-    # file = input("Enter files to use as input: ")
-    # file = "test.txt"
-    # type = input("Enter one of blob | tree | commit: ")
-    # with open(file, "rb") as f:
-    #     byte_data = f.read()
+    file = input("Enter files to use as input: ")
+    file = "test.txt"
+    type = input("Enter one of blob | tree | commit: ")
+    with open(file, "rb") as f:
+        byte_data = f.read()
 
-    # print(hash_object(byte_data, type))
-    # print(write_object(byte_data, type))
-    hashed = "c09d9ee18136f6fd15e17c8801d8213cb0dc57c6"
-    print(read_object(hashed))
+    print("The hash object looks like: " + hash_object(byte_data, type))
+    print("We are going to store the object under .pygit/objects: " + write_object(byte_data, type))
+    hashed = "2131205ac70ef69d6d3ec41b96b66be8035c41a8"
+    print("We are trying to read a hashed object: ", read_object(hashed))
 
 
 
@@ -22,7 +22,7 @@ def hash_object(content, type) -> str:
 
     Args:
         content: the real data, as bytes (reading from a file)
-        type: a label, one of "blob" | "tree" | commit. Tells the function what type of object this is
+        type: a label, one of "blob" | "tree" | "commit". Tells the function what type of object this is
 
     Returns:
         hash: 40-char hex digest using SHA-1
@@ -45,12 +45,20 @@ def hash_object(content, type) -> str:
     return sha1_hash.hexdigest()
 
 def write_object(content, type):
+    """
+    This function is going to store hash objects under .pygit/objects
 
+    Args:
+        content: the real data, as bytes (reading from a file)
+        type: a lebel, one of "blob" | "tree | "commit" to specify what kind of object this is
+    
+    Returns:
+        sha1_hash: the hash that has been stored on the disk under .pygit/objects
+    """
     # need to refactor this function later so that we are not repeating ourself 
     # or we will use the hash_object() function from main and send that value down here when we write
     header = f"{type} {len(content)}\0"
     sha1_hash = (hashlib.sha1(header.encode('utf-8') + content).hexdigest())
-    print(sha1_hash)
 
     # slice the first 2 indices to use as a folder path
     # so that we end up with something like:
@@ -107,7 +115,6 @@ def read_object(hash):
     obj_type = obj_type.decode("utf-8") # decode to match the input 
 
     return obj_type, content, obj_size
-
 
 if __name__ == "__main__":
     main()
