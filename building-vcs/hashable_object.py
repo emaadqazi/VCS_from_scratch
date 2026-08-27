@@ -67,8 +67,13 @@ def write_object(content, type):
     path = f".pygit/objects/{subfolder}" 
     os.makedirs(path, exist_ok=True) # creates the path if it DNE | otherwise leaves it as is
     file_path = os.path.join(path, filename)
-    with open(file_path, "wb") as file:
-                    file.write(compressed)
+    if not os.path.exists(f".pygit/objects/{subfolder}/{filename}"):
+        print("Nothing exists here!")
+        with open(file_path, "wb") as file:
+                        file.write(compressed)
+    else:
+          print("The same hash exists here.")
+                    
 
     return sha1_hash
 
