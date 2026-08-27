@@ -4,13 +4,15 @@ import zlib
 
 def main():
     # file = input("Enter files to use as input: ")
-    file = "test.txt"
-    type = input("Enter one of blob | tree | commit: ")
-    with open(file, "rb") as f:
-        byte_data = f.read()
+    # file = "test.txt"
+    # type = input("Enter one of blob | tree | commit: ")
+    # with open(file, "rb") as f:
+    #     byte_data = f.read()
 
     # print(hash_object(byte_data, type))
-    print(write_object(byte_data, type))
+    # print(write_object(byte_data, type))
+    hashed = "c09d9ee18136f6fd15e17c8801d8213cb0dc57c6"
+    print(read_object(hashed))
 
 
 
@@ -74,8 +76,38 @@ def write_object(content, type):
     else:
           print("The same hash exists here.")
                     
-
     return sha1_hash
+
+def read_object(hash):
+    """
+    This function is going to be able to read files back 
+
+    Args:
+        Hash: entire 40 character hash that is stored under .pygit/objects
+    
+    Returns:
+        obj_type: the original type we inputted for that hash in plain english (blob | tree | commit)
+        obj_size: the original amount of bytes, in b"{size}" format
+        content: the content decompressed, in b"{content}" format
+    """
+    subfolder = hash[:2]
+    filename = hash[2:]
+
+    filepath = f".pygit/objects/{subfolder}/{filename}"
+    if not os.path.exists(filepath):
+        print("The specified file path does not exist.")
+        return None
+    else:
+        with open(filepath, "rb") as file:
+            data = file.read()
+            decompressed = zlib.decompress(data)
+
+    header, content = decompressed.split(b"\x00", 1)
+    obj_type, obj_size = header.split(b" ")
+    obj_type = obj_type.decode("utf-8") # decode to match the input 
+
+    return obj_type, content, obj_size
+
 
 if __name__ == "__main__":
     main()
