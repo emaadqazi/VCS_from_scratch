@@ -3,8 +3,9 @@ import json
 from objects import hash_object, write_object, read_object
 
 def main():
-    testFile = input("What file do you want to add? ")
-    add(testFile)
+    # testFile = input("What file do you want to add? ")
+    # add(testFile)
+    commit("test123")
 
 
 def init():
@@ -55,6 +56,70 @@ def add(fileToAdd):
     # Write updated index back to disk. Writing will automatically create if it does not exist
     with open(".pygit/index", "w") as file:
         json.dump(index, file, indent=4)
+
+def commit(message, who="testUser"):
+
+    # Load the JSON file if it exists 
+    try:
+        with open(".pygit/index", "r") as file:
+            index = json.load(file)
+            if index: # check that there are files set for staging
+                pass
+            else: # otherwise return error 
+                return print("There is nothing staged to commit.")
+    except FileNotFoundError:
+        print("Index does not exist here")
+        return
+
+    # Construct string for the working tree data 
+    stringMap = "" 
+    for key, value in index.items():
+        stringMap += f"{key} {value}\n"
+
+    # Convert the string into bytes so we can send to write_object
+    stringMap = stringMap.encode() 
+    hashed = write_object(stringMap, "tree")
+
+    # Find the branch and build the path 
+    with open(".pygit/HEAD", "r") as file:
+        string = file.read()
+        branch_main = string.split("/")[-1]
+
+    pathToBuild = (f".pygit/refs/heads/{branch_main}")
+
+    # check if there is a parent branch 
+    if not os.path.exists(pathToBuild):
+        parent = None 
+    else:
+        with open(pathToBuild, "r") as file:
+            parent = file.read()
+
+    # construct the string 
+    if parent:
+        textContent = (
+                        f"tree {hashed}\n"
+                        f"parent {parent}\n"
+                        f"author {who}\n"
+                        f"\n"
+                        f"{message}\n"
+                    )
+    else:
+        textContent = (
+                        f"tree {hashed}\n"
+                        f"author {who}\n"
+                        f"\n"
+                        f"{message}\n"
+                    )
+
+    # Storing the branch and moving it forward; building history
+    commitBytes = textContent.encode()
+    commitHashed = write_object(commitBytes, "commit")
+    with open(pathToBuild, "w") as file:
+        file.write(commitHashed)
+
+    # Reset index (staging) 
+    with open(".pygit/index", "w") as file:
+        json.dump({}, file)
 
 if __name__ == "__main__":
     main()
