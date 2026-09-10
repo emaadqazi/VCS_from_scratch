@@ -5,7 +5,8 @@ from objects import hash_object, write_object, read_object
 def main():
     # testFile = input("What file do you want to add? ")
     # add(testFile)
-    commit("test123")
+    # commit("test.txt")
+    read_object("323fa11575f1263fa525658bc4ceb432b560f2ac")
 
 
 def init():
@@ -26,6 +27,16 @@ def init():
         print("HEAD already exists!")
 
 def add(fileToAdd):
+    """
+    This function is going to add files for staging
+
+    Args:
+        fileToAdd: the file that is being added to staging
+
+    Returns:
+        None. Returns early (without updating the index) if the file
+        doesn't exist or the index file is corrupted.
+    """
 
     # Reading the files contents
     try:
@@ -58,6 +69,17 @@ def add(fileToAdd):
         json.dump(index, file, indent=4)
 
 def commit(message, who="testUser"):
+    """
+    This function is going to commit the staging files to the working tree
+    *need to add timestamp to this as well 
+
+    Args:
+        message: the str message the user wants to attach with the commit
+        who: for now set as testUser, later will add the actual user 
+
+    Returns:
+        None if there are no errors
+    """
 
     # Load the JSON file if it exists 
     try:
